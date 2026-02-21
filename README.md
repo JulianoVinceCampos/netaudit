@@ -28,7 +28,7 @@
 O NetAudit é um scanner TCP de portas e serviços estruturado e somente leitura, construído
 para engenheiros de segurança, pentesters e administradores de sistemas que conduzem
 auditorias de rede autorizadas. Ele é projetado para produzir **evidências de qualidade
-técnica** — achados estruturados, classificações de risco e recomendações acionáveis —
+técnica** achados estruturados, classificações de risco e recomendações acionáveis
 não apenas dados brutos de portas.
 
 ### Princípios de Design
@@ -37,7 +37,7 @@ não apenas dados brutos de portas.
 |---|---|
 | **Seguro por padrão** | Apenas TCP connect, sem raw sockets, semáforo de concorrência, rate limiting configurável |
 | **Zero privilégios** | Não requer root/administrador em nenhuma plataforma |
-| **Zero dependências** | Pura stdlib Python — funciona em ambientes com restrição de pacotes |
+| **Zero dependências** | Pura stdlib Python funciona em ambientes com restrição de pacotes |
 | **Orientado a evidências** | Cada achado cita nível de risco, detalhe técnico e referências (CVE, MITRE, CWE) |
 | **Biblioteca + CLI** | Importável como pacote Python; utilizável em pipelines de automação |
 | **Amigável ao CI** | Exit code 1 em achados CRÍTICOS; modo silencioso legível por máquina |
@@ -53,11 +53,11 @@ não apenas dados brutos de portas.
 - Modo `--safe`: limita automaticamente threads e timeout, adiciona controle de taxa
 
 ### Fingerprinting e Banner Grabbing
-- **SSH** — captura do banner bruto (`SSH-2.0-OpenSSH_9.x`)
-- **SMTP / FTP / POP3 / IMAP** — captura do greeting espontâneo
-- **HTTP / HTTP-Alt** — probe `HEAD /`, captura header `Server` e linha de status
-- **HTTPS / SMTPS / LDAPS / etc.** — handshake TLS + probe HTTP
-- **Inspeção de Certificado TLS** — subject, issuer, lista de SANs, validade, detecção de auto-assinado, algoritmo de assinatura
+- **SSH** captura do banner bruto (`SSH-2.0-OpenSSH_9.x`)
+- **SMTP / FTP / POP3 / IMAP** captura do greeting espontâneo
+- **HTTP / HTTP-Alt** probe `HEAD /`, captura header `Server` e linha de status
+- **HTTPS / SMTPS / LDAPS / etc.** handshake TLS + probe HTTP
+- **Inspeção de Certificado TLS** subject, issuer, lista de SANs, validade, detecção de auto-assinado, algoritmo de assinatura
 
 ### Motor de Achados (10 Categorias de Regras)
 
@@ -69,10 +69,10 @@ não apenas dados brutos de portas.
 | 🔵 **Baixo / Info** | Versão exposta no banner, reminder de relay SMTP aberto |
 
 ### Formatos de Saída
-- **Terminal** — relatório ANSI colorido com tabela de portas, resumo TLS e achados
-- **JSON** — estruturado, adequado para ingestão em SIEM ou processamento adicional
-- **CSV** — uma linha por porta, todos os campos, pronto para planilhas
-- **Markdown** — relatório formatado pronto para GitHub, Confluence ou Notion
+- **Terminal** relatório ANSI colorido com tabela de portas, resumo TLS e achados
+- **JSON** estruturado, adequado para ingestão em SIEM ou processamento adicional
+- **CSV** uma linha por porta, todos os campos, pronto para planilhas
+- **Markdown** relatório formatado pronto para GitHub, Confluence ou Notion
 
 ---
 
@@ -116,10 +116,10 @@ python -m netaudit --selftest
 ## Início Rápido
 
 ```bash
-# Escanear localhost — portas comuns com fingerprinting completo
+# Escanear localhost portas comuns com fingerprinting completo
 python -m netaudit 127.0.0.1 --banners
 
-# Escanear um host específico — top ports, modo seguro, todas as saídas
+# Escanear um host específico top ports, modo seguro, todas as saídas
 python -m netaudit 192.168.1.10 -p 1-1024 --safe --banners --out ./relatorios
 
 # Conjunto de portas customizado + relatório markdown
@@ -171,7 +171,7 @@ uso: netaudit [-h] [-p SPEC] [-t N] [--timeout SEC] [--banners] [--rdns]
 
 ```
 ══════════════════════════════════════════════════════════════════════
-  NetAudit v2.0.0 — TCP Port & Service Audit Report
+  NetAudit v2.0.0 TCP Port & Service Audit Report
 ══════════════════════════════════════════════════════════════════════
   Target       : 192.168.1.10
   Resolved IP  : 192.168.1.10
@@ -202,7 +202,7 @@ uso: netaudit [-h] [-p SPEC] [-t N] [--timeout SEC] [--banners] [--rdns]
   AUDIT FINDINGS & RECOMMENDATIONS
   ────────────────────────────────────────────────────────────────────
 
-  [CRITICAL] Port 2375 — Docker API Exposed Without TLS
+  [CRITICAL] Port 2375 Docker API Exposed Without TLS
     The Docker daemon API (port 2375) is accessible without
     authentication or encryption. This is equivalent to
     unauthenticated root on the host...
@@ -211,7 +211,7 @@ uso: netaudit [-h] [-p SPEC] [-t N] [--timeout SEC] [--banners] [--rdns]
       Immediately bind Docker to a Unix socket (default). If remote
       access is required, enable TLS client certificates on port 2376.
 
-  [HIGH    ] Port 22 — SSH Exposed to Network
+  [HIGH    ] Port 22 SSH Exposed to Network
     SSH (22) is accessible. While SSH is generally secure, broad
     exposure invites brute-force and credential-stuffing...
 
@@ -244,7 +244,7 @@ Gera:
 - `relatorios/localhost/netaudit_127.0.0.1_20250115_143201.csv`
 - `relatorios/localhost/netaudit_127.0.0.1_20250115_143201.md`
 
-### 2. Varredura de range em modo seguro — pegada mínima na rede
+### 2. Varredura de range em modo seguro pegada mínima na rede
 
 ```bash
 python -m netaudit 10.0.0.1 \
@@ -321,7 +321,7 @@ netaudit/
 │   ├── __main__.py              # Ponto de entrada CLI (python -m netaudit)
 │   ├── constants.py             # Hints de porta, classificações de risco, conjuntos de protocolo
 │   ├── models.py                # Dataclasses tipados (PortResult, ScanReport, Finding…)
-│   ├── scanner.py               # ScanConfig + Scanner — engine TCP com concorrência
+│   ├── scanner.py               # ScanConfig + Scanner engine TCP com concorrência
 │   ├── fingerprint.py           # Banner grabbing, probe HTTP, inspeção TLS
 │   ├── findings.py              # Motor de achados baseado em regras (10 categorias)
 │   ├── output.py                # Renderizador de terminal, exportadores JSON/CSV/Markdown
@@ -331,7 +331,7 @@ netaudit/
 │       └── test_parsers.py      # Self-tests (via --selftest, sem rede)
 │
 ├── tests/
-│   └── test_all.py              # Suite pytest — models, findings, parsers, utilitários
+│   └── test_all.py              # Suite pytest models, findings, parsers, utilitários
 │
 ├── .github/
 │   ├── workflows/ci.yml         # CI: 5 versões Python × 3 OS + cobertura + lint + segurança
@@ -352,11 +352,11 @@ netaudit/
 
 O TCP connect scan completa o three-way handshake completo. Isso significa:
 
-- ✅ **Não requer root/administrador** — o SYN scan com raw socket exige privilégios
+- ✅ **Não requer root/administrador** o SYN scan com raw socket exige privilégios
 - ✅ **Funciona em todas as plataformas** incluindo WSL, containers e VMs cloud restritas
-- ✅ **Resultados confiáveis** — o OS gerencia retransmissões; `ConnectionRefused` é definitivo
-- ⚠️ **Registrado pelo alvo** — a conexão aparece nos logs do servidor
-- ⚠️ **Não é furtivo** — projetado para auditorias autorizadas, não para evasão red-team
+- ✅ **Resultados confiáveis** o OS gerencia retransmissões; `ConnectionRefused` é definitivo
+- ⚠️ **Registrado pelo alvo** a conexão aparece nos logs do servidor
+- ⚠️ **Não é furtivo** projetado para auditorias autorizadas, não para evasão red-team
 
 ### Definição dos Status de Porta
 
@@ -364,7 +364,7 @@ O TCP connect scan completa o three-way handshake completo. Isso significa:
 |---|---|---|
 | `open` | Handshake completo | Serviço aceitando conexões |
 | `closed` | `ConnectionRefused` / RST | Porta alcançável, nada escutando |
-| `filtered` | Timeout / sem resposta | Firewall descartando pacotes — **não é o mesmo que fechado** |
+| `filtered` | Timeout / sem resposta | Firewall descartando pacotes **não é o mesmo que fechado** |
 
 **Importante:** `filtered` não significa seguro. Um firewall que descarta pacotes silenciosamente
 do seu IP pode ainda permitir tráfego de outras origens. Valide as regras de firewall
@@ -380,7 +380,7 @@ a partir de múltiplas posições de rede.
 
 ### Modo de Inspeção TLS
 
-Os dados do certificado TLS são coletados em **modo auditoria** — a validação da cadeia
+Os dados do certificado TLS são coletados em **modo auditoria** a validação da cadeia
 de certificados é intencionalmente desabilitada. Isso permite a inspeção de certificados
 auto-assinados, expirados e de CAs internas sem erros. O NetAudit reporta metadados,
 não valida confiança.
@@ -396,7 +396,7 @@ pytest tests/ -v
 # Com relatório de cobertura
 pytest tests/ --cov=netaudit --cov-report=term-missing
 
-# Sem rede, sem pytest — self-tests integrados
+# Sem rede, sem pytest self-tests integrados
 python -m netaudit --selftest
 
 # Verificação de tipos
@@ -425,7 +425,7 @@ Após executar uma varredura, percorra esta checklist:
 **Criptografia**
 - [ ] Todos os certificados TLS são válidos e não auto-assinados
 - [ ] Certificados têm validade ≥ 30 dias (automatizar renovação com ACME/Let's Encrypt)
-- [ ] TLS 1.0/1.1 desabilitado — verificar com `testssl.sh --protocols <alvo>`
+- [ ] TLS 1.0/1.1 desabilitado verificar com `testssl.sh --protocols <alvo>`
 - [ ] HTTP redireciona para HTTPS com HSTS (`Strict-Transport-Security`)
 - [ ] Protocolos plaintext (Telnet, FTP, LDAP, POP3, IMAP) substituídos por alternativas criptografadas
 
