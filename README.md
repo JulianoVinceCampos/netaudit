@@ -4,7 +4,6 @@
 
 **Scanner Profissional de Portas TCP e Auditoria de Serviços**
 
-[![CI](https://github.com/yourusername/netaudit/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/netaudit/actions)
 [![Python](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-blue)](https://pypi.org/project/netaudit/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Zero Dependências](https://img.shields.io/badge/dependências-zero-brightgreen)](pyproject.toml)
