@@ -1,0 +1,85 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "netaudit"
+version = "2.0.0"
+description = "Professional TCP port & service audit scanner — zero dependencies"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.8"
+authors = [
+    { name = "NetAudit Contributors" },
+]
+keywords = ["security", "pentest", "audit", "port-scanner", "network"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Security",
+    "Topic :: System :: Networking",
+    "Topic :: System :: Systems Administration",
+]
+
+# Zero runtime dependencies — stdlib only
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "mypy>=1.0",
+    "ruff>=0.1",
+]
+
+[project.scripts]
+netaudit = "netaudit.__main__:main"
+
+[project.urls]
+Homepage       = "https://github.com/yourusername/netaudit"
+Documentation  = "https://github.com/yourusername/netaudit#readme"
+Issues         = "https://github.com/yourusername/netaudit/issues"
+Changelog      = "https://github.com/yourusername/netaudit/blob/main/CHANGELOG.md"
+
+# ── Tool configuration ─────────────────────────────────────────────────────────
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["netaudit*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts   = "-v --tb=short"
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.coverage.run]
+source = ["netaudit"]
+omit   = ["netaudit/tests/*", "tests/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
+    "def __repr__",
+]
+
+[tool.mypy]
+python_version = "3.8"
+strict         = true
+ignore_missing_imports = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py38"
+select = ["E", "F", "W", "I", "N", "UP", "B"]
+ignore = ["E501"]
