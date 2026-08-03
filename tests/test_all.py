@@ -1,7 +1,7 @@
 """
 tests/test_all.py
 ~~~~~~~~~~~~~~~~~
-pytest-compatible test suite — wraps the inline self-tests plus
+pytest-compatible test suite: wraps the inline self-tests plus
 adds network-free integration-style tests.
 
 Run:
@@ -299,6 +299,6 @@ class TestUtils:
         assert "." in result
 
     def test_reverse_dns_invalid_returns_empty(self):
-        # Should not raise — returns empty string on failure
+        # Should not raise: returns empty string on failure
         result = reverse_dns("0.0.0.0")
         assert isinstance(result, str)

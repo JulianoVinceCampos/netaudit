@@ -25,7 +25,7 @@ We will acknowledge within 48 hours and aim to release a patch within 14 days fo
 
 ## Scope
 
-This project is a **security tool** — report vulnerabilities in the scanner itself, not findings it reports.
+This project is a **security tool**. Report vulnerabilities in the scanner itself, not findings it reports.
 
 ## Ethical Use
 

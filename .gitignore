@@ -1,0 +1,26 @@
+# Bytecode e empacotamento
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# Ambientes virtuais
+.venv/
+venv/
+
+# Cache de ferramenta
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Cobertura
+.coverage
+coverage.xml
+htmlcov/
+
+# Relatorios gerados pelo proprio scanner (--out)
+relatorios/
+netaudit_*.json
+netaudit_*.csv
+netaudit_*.md

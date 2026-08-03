@@ -6,7 +6,7 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
-## [2.0.0] — 2025-01-xx
+## [2.0.0] - 2025-01-xx
 
 ### Added
 - Full package structure with `netaudit` importable as a library
@@ -23,9 +23,9 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 - Markdown report export (`--md / --markdown`)
 - JSON and CSV exports with full field coverage
 - Exit code `1` when CRITICAL findings detected (CI/pipeline integration)
-- `--selftest` flag — runs all unit tests without network access
+- `--selftest` flag: runs all unit tests without network access
 - pytest test suite in `tests/` covering parsing, models, findings, and utilities
-- GitHub Actions CI: multi-OS (Linux/macOS/Windows), Python 3.8–3.12, lint, type check
+- GitHub Actions CI: multi-OS (Linux/macOS/Windows), Python 3.10-3.13, lint, type check
 - `pyproject.toml` with `[project.scripts]` entry point
 - `SECURITY.md`, `CONTRIBUTING.md`, issue templates
 
@@ -40,7 +40,7 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
-## [1.0.0] — 2025-01-xx
+## [1.0.0] - 2025-01-xx
 
 ### Added
 - Initial release: single-file TCP connect scanner

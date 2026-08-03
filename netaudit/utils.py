@@ -10,12 +10,11 @@ from __future__ import annotations
 import re
 import socket
 import sys
-from typing import List
-
+from typing import NoReturn
 
 # ── Port parsing ───────────────────────────────────────────────────────────────
 
-def parse_ports(spec: str) -> List[int]:
+def parse_ports(spec: str) -> list[int]:
     """
     Parse a flexible port specification string into a sorted, deduplicated list.
 
@@ -38,7 +37,7 @@ def parse_ports(spec: str) -> List[int]:
     if not spec or not spec.strip():
         raise ValueError("port specification must not be empty")
 
-    ports: set = set()
+    ports: set[int] = set()
     parts = [p.strip() for p in spec.split(",") if p.strip()]
 
     for part in parts:
@@ -53,7 +52,7 @@ def parse_ports(spec: str) -> List[int]:
     return sorted(ports)
 
 
-def _parse_single(token: str, ports: set) -> None:
+def _parse_single(token: str, ports: set[int]) -> None:
     try:
         port = int(token)
     except ValueError:
@@ -62,7 +61,7 @@ def _parse_single(token: str, ports: set) -> None:
     ports.add(port)
 
 
-def _parse_range(token: str, ports: set) -> None:
+def _parse_range(token: str, ports: set[int]) -> None:
     parts = token.split("-", 1)
     if len(parts) != 2:
         raise ValueError(f"invalid range syntax: '{token}'")
@@ -87,7 +86,7 @@ def _parse_range(token: str, ports: set) -> None:
 def _validate_port(port: int, label: str) -> None:
     if not (1 <= port <= 65535):
         raise ValueError(
-            f"port out of range [1–65535]: {label} → {port}"
+            f"port out of range [1-65535]: {label} → {port}"
         )
 
 
@@ -125,6 +124,6 @@ def safe_filename(name: str) -> str:
     return re.sub(r"[^\w.\-]", "_", name)
 
 
-def _fatal(msg: str) -> None:
+def _fatal(msg: str) -> NoReturn:
     print(f"\n[ERROR] {msg}", file=sys.stderr)
     sys.exit(1)

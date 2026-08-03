@@ -7,13 +7,11 @@ Kept separate so it can be extended or overridden by users.
 
 from __future__ import annotations
 
-from typing import Dict, FrozenSet
-
 VERSION = "2.0.0"
 
 # ── Port → service hint ────────────────────────────────────────────────────────
 
-PORT_HINTS: Dict[int, str] = {
+PORT_HINTS: dict[int, str] = {
     # Remote access
     21:    "FTP",
     22:    "SSH",
@@ -96,56 +94,56 @@ PORT_HINTS: Dict[int, str] = {
 
 # ── Risk classification by port ────────────────────────────────────────────────
 
-CRITICAL_PORTS: FrozenSet[int] = frozenset({
-    23,     # Telnet — plaintext
-    2375,   # Docker API (unencrypted) — full host RCE
+CRITICAL_PORTS: frozenset[int] = frozenset({
+    23,     # Telnet: plaintext
+    2375,   # Docker API (unencrypted): full host RCE
     4243,   # Docker alt
     2379,   # etcd (often unauthenticated, holds cluster secrets)
     10255,  # Kubelet read-only (unauthenticated)
 })
 
-HIGH_RISK_PORTS: FrozenSet[int] = frozenset({
-    22,     # SSH — expose to internet only if required
-    3389,   # RDP — common ransomware vector
-    445,    # SMB — EternalBlue / ransomware
-    5900,   # VNC — often weak auth
-    6379,   # Redis — often no auth
-    9200,   # Elasticsearch — often no auth
-    27017,  # MongoDB — often no auth
-    11211,  # Memcached — no auth + amplification DDoS
-    6000,   # X11 — remote display hijack
-    50070,  # Hadoop — often no auth
+HIGH_RISK_PORTS: frozenset[int] = frozenset({
+    22,     # SSH: expose to internet only if required
+    3389,   # RDP: common ransomware vector
+    445,    # SMB: EternalBlue / ransomware
+    5900,   # VNC: often weak auth
+    6379,   # Redis: often no auth
+    9200,   # Elasticsearch: often no auth
+    27017,  # MongoDB: often no auth
+    11211,  # Memcached: no auth + amplification DDoS
+    6000,   # X11: remote display hijack
+    50070,  # Hadoop: often no auth
 })
 
-MEDIUM_RISK_PORTS: FrozenSet[int] = frozenset({
-    21,     # FTP — plaintext credentials
-    25,     # SMTP — open relay check
-    110,    # POP3 — plaintext
-    143,    # IMAP — plaintext
-    389,    # LDAP — cleartext (use 636/LDAPS)
+MEDIUM_RISK_PORTS: frozenset[int] = frozenset({
+    21,     # FTP: plaintext credentials
+    25,     # SMTP: open relay check
+    110,    # POP3: plaintext
+    143,    # IMAP: plaintext
+    389,    # LDAP: cleartext (use 636/LDAPS)
     1433,   # MSSQL
     1521,   # Oracle
     3306,   # MySQL
     5432,   # PostgreSQL
     5672,   # AMQP
-    8080,   # HTTP-Alt — proxy/admin interfaces
-    9090,   # Prometheus — metrics exposure
-    9092,   # Kafka — no auth by default
+    8080,   # HTTP-Alt: proxy/admin interfaces
+    9090,   # Prometheus: metrics exposure
+    9092,   # Kafka: no auth by default
     15672,  # RabbitMQ management
 })
 
 # ── Protocol classification ────────────────────────────────────────────────────
 
-TLS_PORTS: FrozenSet[int] = frozenset({
+TLS_PORTS: frozenset[int] = frozenset({
     443, 465, 636, 993, 995, 2376, 5986, 6443, 8443,
 })
 
-HTTP_PORTS: FrozenSet[int] = frozenset({
+HTTP_PORTS: frozenset[int] = frozenset({
     80, 8000, 8080, 8888, 3000, 5601, 9090, 15672, 8161,
 })
 
 # Ports that expose management / admin interfaces
-MGMT_PORTS: FrozenSet[int] = frozenset({
+MGMT_PORTS: frozenset[int] = frozenset({
     15672, 8161, 5601, 9090, 3000, 10250, 10255, 2379, 8443,
 })
 

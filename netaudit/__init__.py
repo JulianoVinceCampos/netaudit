@@ -1,5 +1,5 @@
 """
-netaudit — TCP Port & Service Audit Scanner
+netaudit: TCP Port & Service Audit Scanner
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 A professional-grade, zero-dependency network reconnaissance and
 audit tool designed for authorised security assessments.
@@ -26,7 +26,7 @@ from .models import (
     ScanReport,
     ScanStatus,
 )
-from .scanner import Scanner, ScanConfig
+from .scanner import ScanConfig, Scanner
 
 __version__ = VERSION
 __all__ = [

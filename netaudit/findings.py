@@ -6,26 +6,24 @@ Rule-based findings engine.
 Each rule inspects a ScanReport and appends Finding objects with
 structured risk level, detail, and actionable recommendations.
 
-Design: pure functions — no I/O, no side effects, fully testable.
+Design: pure functions, no I/O, no side effects, fully testable.
 """
 
 from __future__ import annotations
 
-from typing import List
-
-from .models import Finding, RiskLevel, ScanReport, ScanStatus
 from .constants import (
-    CRITICAL_PORTS, HIGH_RISK_PORTS, MEDIUM_RISK_PORTS,
-    PORT_HINTS, TLS_PORTS,
+    CRITICAL_PORTS,
+    HIGH_RISK_PORTS,
 )
+from .models import Finding, PortResult, RiskLevel, ScanReport
 
 
-def analyse(report: ScanReport) -> List[Finding]:
+def analyse(report: ScanReport) -> list[Finding]:
     """
     Run all analysis rules against *report*.
     Returns a list of Finding objects, sorted by risk (critical first).
     """
-    findings: List[Finding] = []
+    findings: list[Finding] = []
     open_ports = report.open_ports()
     open_port_numbers = {r.port for r in open_ports}
 
@@ -34,7 +32,7 @@ def analyse(report: ScanReport) -> List[Finding]:
 
     # Deduplicate (same port + title)
     seen = set()
-    unique: List[Finding] = []
+    unique: list[Finding] = []
     for f in findings:
         key = (f.port, f.title)
         if key not in seen:
@@ -55,7 +53,14 @@ def analyse(report: ScanReport) -> List[Finding]:
 
 # ── Rule helpers ───────────────────────────────────────────────────────────────
 
-def _f(port, risk, title, detail, recommendation, refs=None) -> Finding:
+def _f(
+    port: int,
+    risk: RiskLevel,
+    title: str,
+    detail: str,
+    recommendation: str,
+    refs: list[str] | None = None,
+) -> Finding:
     return Finding(
         port=port,
         risk=risk,
@@ -68,12 +73,16 @@ def _f(port, risk, title, detail, recommendation, refs=None) -> Finding:
 
 # ── Rules ─────────────────────────────────────────────────────────────────────
 
-def _rule_critical_ports(open_set, open_results, report) -> List[Finding]:
+def _rule_critical_ports(
+    open_set: set[int],
+    open_results: list[PortResult],
+    report: ScanReport,
+) -> list[Finding]:
     findings = []
     specs = {
         23: (
             "Telnet Service Exposed",
-            "Telnet transmits all data — including credentials — in plaintext. "
+            "Telnet transmits all data, including credentials, in plaintext. "
             "Any network observer can capture sessions trivially.",
             "Disable Telnet immediately. Replace with SSH (port 22) with key-based "
             "authentication. If legacy devices require Telnet, isolate them on a "
@@ -130,7 +139,11 @@ def _rule_critical_ports(open_set, open_results, report) -> List[Finding]:
     return findings
 
 
-def _rule_high_risk_ports(open_set, open_results, report) -> List[Finding]:
+def _rule_high_risk_ports(
+    open_set: set[int],
+    open_results: list[PortResult],
+    report: ScanReport,
+) -> list[Finding]:
     findings = []
     specs = {
         3389: (
@@ -180,7 +193,7 @@ def _rule_high_risk_ports(open_set, open_results, report) -> List[Finding]:
             ["https://attack.mitre.org/techniques/T1021/005/"],
         ),
         6379: (
-            "Redis Exposed — Likely Unauthenticated",
+            "Redis Exposed: Likely Unauthenticated",
             "Redis (6379) is accessible. Redis defaults to no authentication and "
             "no encryption. Exposed Redis instances are actively mass-exploited for "
             "data exfiltration, crypto-mining, and as a foothold for deeper access.",
@@ -202,7 +215,7 @@ def _rule_high_risk_ports(open_set, open_results, report) -> List[Finding]:
              "https://attack.mitre.org/techniques/T1190/"],
         ),
         27017: (
-            "MongoDB Exposed — Likely Unauthenticated",
+            "MongoDB Exposed: Likely Unauthenticated",
             "MongoDB (27017) is accessible. Older MongoDB deployments default to "
             "no authentication. This is one of the most commonly breached database "
             "exposures found in bug bounty and incident response.",
@@ -213,7 +226,7 @@ def _rule_high_risk_ports(open_set, open_results, report) -> List[Finding]:
              "https://attack.mitre.org/techniques/T1190/"],
         ),
         11211: (
-            "Memcached Exposed — Unauthenticated + DDoS Risk",
+            "Memcached Exposed: Unauthenticated + DDoS Risk",
             "Memcached (11211) is accessible. Memcached has no authentication "
             "by default and is a well-known DDoS amplification vector "
             "(amplification factor up to 51,000x).",
@@ -230,7 +243,11 @@ def _rule_high_risk_ports(open_set, open_results, report) -> List[Finding]:
     return findings
 
 
-def _rule_tls_issues(open_set, open_results, report) -> List[Finding]:
+def _rule_tls_issues(
+    open_set: set[int],
+    open_results: list[PortResult],
+    report: ScanReport,
+) -> list[Finding]:
     findings = []
     for r in open_results:
         if r.cert is None:
@@ -289,7 +306,11 @@ def _rule_tls_issues(open_set, open_results, report) -> List[Finding]:
     return findings
 
 
-def _rule_plaintext_alternatives(open_set, open_results, report) -> List[Finding]:
+def _rule_plaintext_alternatives(
+    open_set: set[int],
+    open_results: list[PortResult],
+    report: ScanReport,
+) -> list[Finding]:
     """Flag plaintext protocols where an encrypted alternative exists."""
     findings = []
     pairs = [
@@ -332,11 +353,15 @@ def _rule_plaintext_alternatives(open_set, open_results, report) -> List[Finding
     return findings
 
 
-def _rule_http_no_https(open_set, open_results, report) -> List[Finding]:
+def _rule_http_no_https(
+    open_set: set[int],
+    open_results: list[PortResult],
+    report: ScanReport,
+) -> list[Finding]:
     """HTTP open but no HTTPS."""
     if 80 in open_set and 443 not in open_set and 8443 not in open_set:
         return [_f(80, RiskLevel.MEDIUM,
-            "HTTP Exposed — No HTTPS Detected",
+            "HTTP Exposed: No HTTPS Detected",
             "Port 80 is open but no HTTPS service was found on common ports. "
             "All web traffic is transmitted in plaintext.",
             "Deploy TLS with a valid certificate. Configure HTTP→HTTPS redirect. "
@@ -345,7 +370,11 @@ def _rule_http_no_https(open_set, open_results, report) -> List[Finding]:
     return []
 
 
-def _rule_management_interfaces(open_set, open_results, report) -> List[Finding]:
+def _rule_management_interfaces(
+    open_set: set[int],
+    open_results: list[PortResult],
+    report: ScanReport,
+) -> list[Finding]:
     findings = []
     mgmt = {
         15672: ("RabbitMQ Management Console", "RabbitMQ"),
@@ -371,11 +400,15 @@ def _rule_management_interfaces(open_set, open_results, report) -> List[Finding]
     return findings
 
 
-def _rule_smtp_open_relay(open_set, open_results, report) -> List[Finding]:
+def _rule_smtp_open_relay(
+    open_set: set[int],
+    open_results: list[PortResult],
+    report: ScanReport,
+) -> list[Finding]:
     """Flag SMTP presence for open relay testing reminder."""
     if 25 in open_set:
         return [_f(25, RiskLevel.INFO,
-            "SMTP Service Detected — Verify Not Open Relay",
+            "SMTP Service Detected: Verify Not Open Relay",
             "An SMTP server is accessible on port 25. SMTP servers misconfigured "
             "as open relays allow anyone to send email through them, enabling spam "
             "and phishing campaigns.",
@@ -386,7 +419,11 @@ def _rule_smtp_open_relay(open_set, open_results, report) -> List[Finding]:
     return []
 
 
-def _rule_nfs_rpc(open_set, open_results, report) -> List[Finding]:
+def _rule_nfs_rpc(
+    open_set: set[int],
+    open_results: list[PortResult],
+    report: ScanReport,
+) -> list[Finding]:
     findings = []
     if 2049 in open_set:
         findings.append(_f(2049, RiskLevel.HIGH,
@@ -394,7 +431,7 @@ def _rule_nfs_rpc(open_set, open_results, report) -> List[Finding]:
             "Network File System (NFS) is accessible. NFS often has weak access "
             "controls and can be mounted by any host on the network if exports "
             "are misconfigured (no_root_squash, *).",
-            "Review /etc/exports — remove wildcards (*). Enable Kerberos authentication "
+            "Review /etc/exports. Remove wildcards (*). Enable Kerberos authentication "
             "(sec=krb5p). Restrict NFS exports to specific client IPs. "
             "Command to check: showmount -e <target>",
             ["https://attack.mitre.org/techniques/T1135/"]))
@@ -410,20 +447,28 @@ def _rule_nfs_rpc(open_set, open_results, report) -> List[Finding]:
     return findings
 
 
-def _rule_x11(open_set, open_results, report) -> List[Finding]:
+def _rule_x11(
+    open_set: set[int],
+    open_results: list[PortResult],
+    report: ScanReport,
+) -> list[Finding]:
     if 6000 in open_set:
         return [_f(6000, RiskLevel.CRITICAL,
             "X11 Display Server Exposed",
             "X11 (port 6000) is accessible. An unauthenticated X11 connection "
             "allows an attacker to capture all keystrokes, take screenshots of "
-            "the desktop, and inject mouse/keyboard input — full graphical session hijack.",
+            "the desktop, and inject mouse/keyboard input: full graphical session hijack.",
             "Disable TCP listening in X11 (add -nolisten tcp to Xorg startup flags). "
             "Use X11 forwarding over SSH instead (ForwardX11 yes in ssh_config).",
             ["https://attack.mitre.org/techniques/T1021/006/"])]
     return []
 
 
-def _rule_banner_version_exposure(open_set, open_results, report) -> List[Finding]:
+def _rule_banner_version_exposure(
+    open_set: set[int],
+    open_results: list[PortResult],
+    report: ScanReport,
+) -> list[Finding]:
     """Detect verbose version strings in banners."""
     findings = []
     for r in open_results:

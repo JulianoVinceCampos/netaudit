@@ -4,12 +4,12 @@
 
 **Scanner Profissional de Portas TCP e Auditoria de Serviços**
 
-[![Python](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-blue)](https://pypi.org/project/netaudit/)
+[![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue)](https://pypi.org/project/netaudit/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Zero Dependências](https://img.shields.io/badge/dependências-zero-brightgreen)](pyproject.toml)
-[![Plataformas](https://img.shields.io/badge/plataforma-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey)](https://github.com/yourusername/netaudit)
+[![Plataformas](https://img.shields.io/badge/plataforma-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey)](https://github.com/JulianoVinceCampos/netaudit)
 
-*Zero dependências externas · Saída orientada a auditoria · Roda em qualquer ambiente com Python 3.8+*
+*Zero dependências externas · Saída orientada a auditoria · Roda em qualquer ambiente com Python 3.10+*
 
 </div>
 
@@ -80,7 +80,7 @@ não apenas dados brutos de portas.
 ### Recomendado: Ambiente Virtual
 
 ```bash
-git clone https://github.com/yourusername/netaudit.git
+git clone https://github.com/JulianoVinceCampos/netaudit.git
 cd netaudit
 
 # Criar e ativar o virtualenv
@@ -98,7 +98,7 @@ pip install -e .
 ### Sem instalação (execução direta)
 
 ```bash
-git clone https://github.com/yourusername/netaudit.git
+git clone https://github.com/JulianoVinceCampos/netaudit.git
 cd netaudit
 python -m netaudit 127.0.0.1 --banners
 ```

@@ -10,21 +10,22 @@ from __future__ import annotations
 import socket
 import threading
 import time
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from dataclasses import dataclass, field
-from typing import Callable, List, Optional
+from dataclasses import dataclass
+from typing import Any
 
 from .fingerprint import fingerprint_port
 from .models import PortResult, ScanMeta, ScanReport, ScanStatus
-from .utils import reverse_dns, resolve_host
+from .utils import resolve_host, reverse_dns
 
 
 @dataclass
 class ScanConfig:
-    """Immutable scan configuration — validated at construction."""
+    """Immutable scan configuration, validated at construction."""
 
     target: str
-    ports: List[int]
+    ports: list[int]
     threads: int = 50
     timeout: float = 2.0
     grab_banners: bool = True
@@ -44,8 +45,8 @@ class ScanConfig:
             raise ValueError("timeout must be positive")
 
     @classmethod
-    def safe(cls, target: str, ports: List[int], **kwargs) -> "ScanConfig":
-        """Factory: safe defaults — lower concurrency, longer timeout."""
+    def safe(cls, target: str, ports: list[int], **kwargs: Any) -> ScanConfig:
+        """Factory: safe defaults, lower concurrency, longer timeout."""
         kwargs.setdefault("threads", 10)
         kwargs.setdefault("timeout", 3.0)
         return cls(target=target, ports=ports, **kwargs)
@@ -63,10 +64,10 @@ class Scanner:
         self._cfg = config
         self._sem = threading.Semaphore(config.threads)
         self._lock = threading.Lock()
-        self._results: List[PortResult] = []
-        self._progress_cb: Optional[Callable[[int, int, int], None]] = None
+        self._results: list[PortResult] = []
+        self._progress_cb: Callable[[int, int, int], None] | None = None
 
-    def on_progress(self, cb: Callable[[int, int, int], None]) -> "Scanner":
+    def on_progress(self, cb: Callable[[int, int, int], None]) -> Scanner:
         """Register callback(done, total, open_count) called after each port."""
         self._progress_cb = cb
         return self
@@ -149,7 +150,7 @@ def _tcp_connect(
             rtt = (time.monotonic() - t0) * 1000
             result.status = ScanStatus.OPEN
             result.rtt_ms = round(rtt, 2)
-    except socket.timeout:
+    except TimeoutError:
         result.status = ScanStatus.FILTERED
         return result
     except ConnectionRefusedError:

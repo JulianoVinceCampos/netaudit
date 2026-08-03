@@ -14,13 +14,11 @@ from __future__ import annotations
 
 import socket
 import ssl
-import struct
 from datetime import datetime, timezone
-from typing import Dict, Optional, Tuple
+from typing import Any
 
+from .constants import HTTP_PORTS, PORT_HINTS, TLS_PORTS
 from .models import CertInfo, PortResult
-from .constants import HTTP_PORTS, TLS_PORTS, PORT_HINTS
-
 
 # ── Dispatcher ────────────────────────────────────────────────────────────────
 
@@ -29,7 +27,7 @@ def fingerprint_port(
 ) -> None:
     """
     Populate *result* in-place with banner/fingerprint data.
-    Never raises — all exceptions are swallowed and noted in result.error.
+    Never raises. All exceptions are swallowed and noted in result.error.
     """
     result.service = PORT_HINTS.get(port, "")
 
@@ -55,6 +53,7 @@ def _probe_http(
 ) -> None:
     """Send HTTP HEAD / and capture response line + headers."""
     raw = socket.create_connection((host, port), timeout=timeout)
+    s: socket.socket
     if tls:
         ctx = _tls_context()
         s = ctx.wrap_socket(raw, server_hostname=host)
@@ -87,7 +86,7 @@ def _probe_http(
     if lines:
         result.banner = lines[0].strip()[:200]
 
-    headers: Dict[str, str] = {}
+    headers: dict[str, str] = {}
     for line in lines[1:]:
         if ": " in line:
             k, _, v = line.partition(": ")
@@ -111,17 +110,17 @@ def _probe_tls(
     ctx = _tls_context()
     raw = socket.create_connection((host, port), timeout=timeout)
     with ctx.wrap_socket(raw, server_hostname=host) as s:
-        cert_dict = s.getpeercert()  # decoded — works even without verify
+        cert_dict = s.getpeercert()  # decoded: works even without verify
         result.cert = _parse_cert(cert_dict) if cert_dict else None
 
     # After TLS cert, try HTTP over TLS
     _probe_http(host, port, tls=True, timeout=timeout, result=result)
 
 
-def _parse_cert(cert_dict: dict) -> CertInfo:
+def _parse_cert(cert_dict: dict[str, Any]) -> CertInfo:
     """Convert ssl.getpeercert() dict → CertInfo dataclass."""
 
-    def _rdn(seq) -> str:
+    def _rdn(seq: Any) -> str:
         parts = []
         for rdn in seq:
             for k, v in rdn:
@@ -133,7 +132,7 @@ def _parse_cert(cert_dict: dict) -> CertInfo:
     nb      = cert_dict.get("notBefore", "")
     na      = cert_dict.get("notAfter",  "")
 
-    san: list = []
+    san: list[str] = []
     for alt_type, alt_val in cert_dict.get("subjectAltName", []):
         san.append(f"{alt_type}:{alt_val}")
 
@@ -231,11 +230,11 @@ def _tls_context() -> ssl.SSLContext:
 def _recv_safe(
     sock: socket.socket,
     size: int = 1024,
-    timeout: Optional[float] = None,
+    timeout: float | None = None,
 ) -> bytes:
     if timeout is not None:
         sock.settimeout(timeout)
     try:
         return sock.recv(size)
-    except (socket.timeout, OSError):
+    except (TimeoutError, OSError):
         return b""

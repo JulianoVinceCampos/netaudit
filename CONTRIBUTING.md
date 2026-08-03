@@ -20,7 +20,7 @@ All contributors must agree:
 ## Development Setup
 
 ```bash
-git clone https://github.com/yourusername/netaudit.git
+git clone https://github.com/JulianoVinceCampos/netaudit.git
 cd netaudit
 
 python3 -m venv venv
@@ -47,7 +47,7 @@ python -m netaudit --selftest
 pytest tests/ --cov=netaudit --cov-report=term-missing
 ```
 
-All tests must pass on Python 3.8–3.12 on Linux, macOS, and Windows.
+All tests must pass on Python 3.10-3.13 on Linux, macOS, and Windows.
 
 ---
 
@@ -62,12 +62,12 @@ mypy netaudit/ --ignore-missing-imports
 ```
 
 Key conventions:
-- **Zero external runtime dependencies** — stdlib only. No exceptions.
+- **Zero external runtime dependencies**: stdlib only. No exceptions.
 - Type annotations on all public functions and class attributes.
 - Docstrings on all public modules, classes, and functions.
 - Functions should be ≤ 40 lines. Extract helpers early.
 - Tests for every new finding rule and utility function.
-- No bare `except:` — catch specific exceptions.
+- No bare `except:`. Catch specific exceptions.
 
 ---
 
@@ -146,5 +146,5 @@ We follow [Conventional Commits](https://www.conventionalcommits.org/):
 
 ## Questions?
 
-Open a [GitHub Discussion](https://github.com/yourusername/netaudit/discussions)
+Open a [GitHub Discussion](https://github.com/JulianoVinceCampos/netaudit/discussions)
 for questions, ideas, or design proposals.
