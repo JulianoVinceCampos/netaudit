@@ -7,7 +7,7 @@ body:
     attributes:
       value: |
         Thanks for taking the time to fill out this bug report.
-        **Do not report security vulnerabilities here — see SECURITY.md.**
+        **Do not report security vulnerabilities here. See SECURITY.md.**
 
   - type: input
     id: version

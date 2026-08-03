@@ -7,11 +7,10 @@ Using dataclasses for zero-dependency, JSON-serialisable structures.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Any, Dict, List, Optional
-
+from typing import Any
 
 # ── Enumerations ──────────────────────────────────────────────────────────────
 
@@ -37,7 +36,7 @@ class CertInfo:
     issuer: str = ""
     not_before: str = ""
     not_after: str = ""
-    san: List[str] = field(default_factory=list)
+    san: list[str] = field(default_factory=list)
     serial: str = ""
     signature_algorithm: str = ""
     # Computed fields
@@ -45,7 +44,7 @@ class CertInfo:
     days_remaining: int = 0
     self_signed: bool = False
 
-    def as_dict(self) -> Dict[str, Any]:
+    def as_dict(self) -> dict[str, Any]:
         return asdict(self)
 
 
@@ -59,14 +58,14 @@ class PortResult:
     protocol: str = "tcp"
     banner: str = ""           # raw first bytes / HTTP status line
     rtt_ms: float = 0.0
-    cert: Optional[CertInfo] = None
-    http_headers: Dict[str, str] = field(default_factory=dict)
+    cert: CertInfo | None = None
+    http_headers: dict[str, str] = field(default_factory=dict)
     error: str = ""
 
     # Populated by findings engine
-    findings: List["Finding"] = field(default_factory=list)
+    findings: list[Finding] = field(default_factory=list)
 
-    def as_dict(self) -> Dict[str, Any]:
+    def as_dict(self) -> dict[str, Any]:
         d = asdict(self)
         d["status"] = self.status.value
         return d
@@ -81,9 +80,9 @@ class Finding:
     title: str
     detail: str
     recommendation: str
-    references: List[str] = field(default_factory=list)
+    references: list[str] = field(default_factory=list)
 
-    def as_dict(self) -> Dict[str, Any]:
+    def as_dict(self) -> dict[str, Any]:
         d = asdict(self)
         d["risk"] = self.risk.value
         return d
@@ -109,7 +108,7 @@ class ScanMeta:
     )
     scanner_version: str = "2.0.0"
 
-    def as_dict(self) -> Dict[str, Any]:
+    def as_dict(self) -> dict[str, Any]:
         return asdict(self)
 
 
@@ -118,16 +117,16 @@ class ScanMeta:
 @dataclass
 class ScanReport:
     meta: ScanMeta
-    results: List[PortResult]
-    findings: List[Finding] = field(default_factory=list)
+    results: list[PortResult]
+    findings: list[Finding] = field(default_factory=list)
 
-    def open_ports(self) -> List[PortResult]:
+    def open_ports(self) -> list[PortResult]:
         return [r for r in self.results if r.status == ScanStatus.OPEN]
 
-    def tls_ports(self) -> List[PortResult]:
+    def tls_ports(self) -> list[PortResult]:
         return [r for r in self.open_ports() if r.cert is not None]
 
-    def highest_risk(self) -> Optional[RiskLevel]:
+    def highest_risk(self) -> RiskLevel | None:
         if not self.findings:
             return None
         order = [RiskLevel.CRITICAL, RiskLevel.HIGH, RiskLevel.MEDIUM,
@@ -138,7 +137,7 @@ class ScanReport:
                 return r
         return None
 
-    def as_dict(self) -> Dict[str, Any]:
+    def as_dict(self) -> dict[str, Any]:
         return {
             "meta": self.meta.as_dict(),
             "findings": [f.as_dict() for f in self.findings],

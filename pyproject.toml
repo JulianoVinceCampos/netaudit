@@ -1,14 +1,14 @@
 [build-system]
 requires = ["setuptools>=68", "wheel"]
-build-backend = "setuptools.backends.legacy:build"
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "netaudit"
 version = "2.0.0"
-description = "Professional TCP port & service audit scanner — zero dependencies"
+description = "Professional TCP port & service audit scanner, zero dependencies"
 readme = "README.md"
 license = { file = "LICENSE" }
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 authors = [
     { name = "NetAudit Contributors" },
 ]
@@ -21,17 +21,16 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Security",
     "Topic :: System :: Networking",
     "Topic :: System :: Systems Administration",
 ]
 
-# Zero runtime dependencies — stdlib only
+# Zero runtime dependencies: stdlib only
 dependencies = []
 
 [project.optional-dependencies]
@@ -46,10 +45,10 @@ dev = [
 netaudit = "netaudit.__main__:main"
 
 [project.urls]
-Homepage       = "https://github.com/yourusername/netaudit"
-Documentation  = "https://github.com/yourusername/netaudit#readme"
-Issues         = "https://github.com/yourusername/netaudit/issues"
-Changelog      = "https://github.com/yourusername/netaudit/blob/main/CHANGELOG.md"
+Homepage       = "https://github.com/JulianoVinceCampos/netaudit"
+Documentation  = "https://github.com/JulianoVinceCampos/netaudit#readme"
+Issues         = "https://github.com/JulianoVinceCampos/netaudit/issues"
+Changelog      = "https://github.com/JulianoVinceCampos/netaudit/blob/main/CHANGELOG.md"
 
 # ── Tool configuration ─────────────────────────────────────────────────────────
 
@@ -74,12 +73,14 @@ exclude_lines = [
 ]
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.10"
 strict         = true
 ignore_missing_imports = true
 
 [tool.ruff]
 line-length = 100
-target-version = "py38"
+target-version = "py310"
+
+[tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "UP", "B"]
 ignore = ["E501"]

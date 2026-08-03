@@ -2,7 +2,7 @@
 netaudit.tests.test_parsers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Unit tests for port parsing, model construction, and findings logic.
-No network access required — fully offline.
+No network access required. Fully offline.
 
 Run via:
     python -m netaudit --selftest
@@ -11,18 +11,18 @@ Run via:
 
 from __future__ import annotations
 
-import sys
 import traceback
-from typing import Callable, List, Tuple
-
+from collections.abc import Callable
 
 # ── Test registry ──────────────────────────────────────────────────────────────
 
-_tests: List[Tuple[str, Callable]] = []
+_TestFn = Callable[[], None]
 
-def test(name: str):
+_tests: list[tuple[str, _TestFn]] = []
+
+def test(name: str) -> Callable[[_TestFn], _TestFn]:
     """Decorator to register a test function."""
-    def decorator(fn):
+    def decorator(fn: _TestFn) -> _TestFn:
         _tests.append((name, fn))
         return fn
     return decorator
@@ -42,7 +42,7 @@ def run_all() -> int:
             print(f"  ✗  {name}")
             print(f"     AssertionError: {exc}")
             failed += 1
-        except Exception as exc:
+        except Exception:
             print(f"  ✗  {name}")
             traceback.print_exc()
             failed += 1
@@ -56,92 +56,92 @@ def run_all() -> int:
 # ── Port parsing tests ─────────────────────────────────────────────────────────
 
 @test("parse_ports: single port")
-def _():
+def _() -> None:
     from netaudit.utils import parse_ports
     assert parse_ports("22") == [22]
 
 @test("parse_ports: multiple ports")
-def _():
+def _() -> None:
     from netaudit.utils import parse_ports
     assert parse_ports("22,80,443") == [22, 80, 443]
 
 @test("parse_ports: range")
-def _():
+def _() -> None:
     from netaudit.utils import parse_ports
     assert parse_ports("1-5") == [1, 2, 3, 4, 5]
 
 @test("parse_ports: combined range and singles")
-def _():
+def _() -> None:
     from netaudit.utils import parse_ports
     assert parse_ports("1-3,8080") == [1, 2, 3, 8080]
 
 @test("parse_ports: deduplication")
-def _():
+def _() -> None:
     from netaudit.utils import parse_ports
     assert parse_ports("80,80,80") == [80]
 
 @test("parse_ports: sorting across mixed input")
-def _():
+def _() -> None:
     from netaudit.utils import parse_ports
     assert parse_ports("8080,1-3") == [1, 2, 3, 8080]
 
 @test("parse_ports: whitespace tolerance")
-def _():
+def _() -> None:
     from netaudit.utils import parse_ports
     assert parse_ports(" 22 , 80 , 443 ") == [22, 80, 443]
 
 @test("parse_ports: single-element range")
-def _():
+def _() -> None:
     from netaudit.utils import parse_ports
     assert parse_ports("443-443") == [443]
 
 @test("parse_ports: error on port 0")
-def _():
+def _() -> None:
     from netaudit.utils import parse_ports
     try:
         parse_ports("0")
-        assert False, "Should have raised ValueError"
+        raise AssertionError("Should have raised ValueError")
     except ValueError:
         pass
 
 @test("parse_ports: error on port 65536")
-def _():
+def _() -> None:
     from netaudit.utils import parse_ports
     try:
         parse_ports("65536")
-        assert False, "Should have raised ValueError"
+        raise AssertionError("Should have raised ValueError")
     except ValueError:
         pass
 
 @test("parse_ports: error on inverted range")
-def _():
+def _() -> None:
     from netaudit.utils import parse_ports
     try:
         parse_ports("1024-80")
-        assert False, "Should have raised ValueError"
+        raise AssertionError("Should have raised ValueError")
     except ValueError:
         pass
 
 @test("parse_ports: error on empty string")
-def _():
+def _() -> None:
     from netaudit.utils import parse_ports
     try:
         parse_ports("")
-        assert False, "Should have raised ValueError"
+        raise AssertionError("Should have raised ValueError")
     except ValueError:
         pass
 
 @test("parse_ports: error on non-numeric token")
-def _():
+def _() -> None:
     from netaudit.utils import parse_ports
     try:
         parse_ports("ssh")
-        assert False, "Should have raised ValueError"
+        raise AssertionError("Should have raised ValueError")
     except ValueError:
         pass
 
 @test("parse_ports: large range is valid")
-def _():
+def _() -> None:
     from netaudit.utils import parse_ports
     result = parse_ports("1-1024")
     assert len(result) == 1024
@@ -149,7 +149,7 @@ def _():
     assert result[-1] == 1024
 
 @test("parse_ports: max valid port 65535")
-def _():
+def _() -> None:
     from netaudit.utils import parse_ports
     assert parse_ports("65535") == [65535]
 
@@ -157,34 +157,34 @@ def _():
 # ── Model tests ────────────────────────────────────────────────────────────────
 
 @test("ScanStatus enum values")
-def _():
+def _() -> None:
     from netaudit.models import ScanStatus
     assert ScanStatus.OPEN.value == "open"
     assert ScanStatus.CLOSED.value == "closed"
     assert ScanStatus.FILTERED.value == "filtered"
 
 @test("RiskLevel ordering")
-def _():
+def _() -> None:
     from netaudit.models import RiskLevel
     levels = [RiskLevel.CRITICAL, RiskLevel.HIGH, RiskLevel.MEDIUM,
               RiskLevel.LOW, RiskLevel.INFO]
     assert len(levels) == 5
 
 @test("PortResult default status is FILTERED")
-def _():
+def _() -> None:
     from netaudit.models import PortResult, ScanStatus
     r = PortResult(port=80)
     assert r.status == ScanStatus.FILTERED
 
 @test("CertInfo self-signed detection in model")
-def _():
+def _() -> None:
     from netaudit.models import CertInfo
     c = CertInfo(subject="CN=test", issuer="CN=test", self_signed=True)
     assert c.self_signed is True
 
 @test("ScanReport.open_ports() filters correctly")
-def _():
-    from netaudit.models import PortResult, ScanReport, ScanMeta, ScanStatus
+def _() -> None:
+    from netaudit.models import PortResult, ScanMeta, ScanReport, ScanStatus
     meta = ScanMeta(target="127.0.0.1", resolved_ip="127.0.0.1")
     results = [
         PortResult(port=22, status=ScanStatus.OPEN),
@@ -198,8 +198,8 @@ def _():
     assert {r.port for r in open_ports} == {22, 80}
 
 @test("ScanReport.tls_ports() returns only ports with cert")
-def _():
-    from netaudit.models import PortResult, ScanReport, ScanMeta, ScanStatus, CertInfo
+def _() -> None:
+    from netaudit.models import CertInfo, PortResult, ScanMeta, ScanReport, ScanStatus
     meta = ScanMeta(target="127.0.0.1", resolved_ip="127.0.0.1")
     c = CertInfo(subject="CN=test", issuer="CN=ca")
     results = [
@@ -211,9 +211,10 @@ def _():
     assert report.tls_ports()[0].port == 443
 
 @test("ScanReport.as_dict() is JSON-serialisable")
-def _():
+def _() -> None:
     import json
-    from netaudit.models import PortResult, ScanReport, ScanMeta, ScanStatus
+
+    from netaudit.models import PortResult, ScanMeta, ScanReport, ScanStatus
     meta = ScanMeta(target="127.0.0.1", resolved_ip="127.0.0.1")
     report = ScanReport(meta=meta, results=[PortResult(port=80, status=ScanStatus.OPEN)])
     d = report.as_dict()
@@ -224,11 +225,9 @@ def _():
 # ── Findings tests ─────────────────────────────────────────────────────────────
 
 @test("findings: Docker unencrypted port flags CRITICAL")
-def _():
-    from netaudit.models import (
-        PortResult, ScanReport, ScanMeta, ScanStatus, RiskLevel
-    )
+def _() -> None:
     from netaudit.findings import analyse
+    from netaudit.models import PortResult, RiskLevel, ScanMeta, ScanReport, ScanStatus
     meta = ScanMeta(target="127.0.0.1", resolved_ip="127.0.0.1")
     report = ScanReport(
         meta=meta,
@@ -241,9 +240,9 @@ def _():
     ), f"Expected CRITICAL finding for port 2375, got: {findings}"
 
 @test("findings: Telnet flags CRITICAL")
-def _():
-    from netaudit.models import PortResult, ScanReport, ScanMeta, ScanStatus, RiskLevel
+def _() -> None:
     from netaudit.findings import analyse
+    from netaudit.models import PortResult, RiskLevel, ScanMeta, ScanReport, ScanStatus
     meta = ScanMeta(target="127.0.0.1", resolved_ip="127.0.0.1")
     report = ScanReport(
         meta=meta,
@@ -253,9 +252,9 @@ def _():
     assert any(f.risk == RiskLevel.CRITICAL and f.port == 23 for f in findings)
 
 @test("findings: no findings for closed port")
-def _():
-    from netaudit.models import PortResult, ScanReport, ScanMeta, ScanStatus
+def _() -> None:
     from netaudit.findings import analyse
+    from netaudit.models import PortResult, ScanMeta, ScanReport, ScanStatus
     meta = ScanMeta(target="127.0.0.1", resolved_ip="127.0.0.1")
     report = ScanReport(
         meta=meta,
@@ -265,11 +264,9 @@ def _():
     assert len(findings) == 0, "Closed ports should not generate findings"
 
 @test("findings: expired TLS cert flags HIGH")
-def _():
-    from netaudit.models import (
-        PortResult, ScanReport, ScanMeta, ScanStatus, CertInfo, RiskLevel
-    )
+def _() -> None:
     from netaudit.findings import analyse
+    from netaudit.models import CertInfo, PortResult, RiskLevel, ScanMeta, ScanReport, ScanStatus
     meta = ScanMeta(target="127.0.0.1", resolved_ip="127.0.0.1")
     cert = CertInfo(
         subject="CN=test", issuer="CN=ca",
@@ -284,11 +281,9 @@ def _():
     assert any(f.risk == RiskLevel.HIGH and "Expired" in f.title for f in findings)
 
 @test("findings: self-signed cert flags MEDIUM")
-def _():
-    from netaudit.models import (
-        PortResult, ScanReport, ScanMeta, ScanStatus, CertInfo, RiskLevel
-    )
+def _() -> None:
     from netaudit.findings import analyse
+    from netaudit.models import CertInfo, PortResult, RiskLevel, ScanMeta, ScanReport, ScanStatus
     meta = ScanMeta(target="127.0.0.1", resolved_ip="127.0.0.1")
     cert = CertInfo(
         subject="CN=test", issuer="CN=test",
@@ -302,9 +297,9 @@ def _():
     assert any(f.risk == RiskLevel.MEDIUM and "Self-Signed" in f.title for f in findings)
 
 @test("findings: RDP flags HIGH")
-def _():
-    from netaudit.models import PortResult, ScanReport, ScanMeta, ScanStatus, RiskLevel
+def _() -> None:
     from netaudit.findings import analyse
+    from netaudit.models import PortResult, RiskLevel, ScanMeta, ScanReport, ScanStatus
     meta = ScanMeta(target="127.0.0.1", resolved_ip="127.0.0.1")
     report = ScanReport(
         meta=meta,
@@ -314,10 +309,9 @@ def _():
     assert any(f.risk == RiskLevel.HIGH and f.port == 3389 for f in findings)
 
 @test("findings: sorted by risk level (critical first)")
-def _():
-    from netaudit.models import PortResult, ScanReport, ScanMeta, ScanStatus
+def _() -> None:
     from netaudit.findings import analyse
-    from netaudit.models import RiskLevel
+    from netaudit.models import PortResult, RiskLevel, ScanMeta, ScanReport, ScanStatus
     meta = ScanMeta(target="127.0.0.1", resolved_ip="127.0.0.1")
     report = ScanReport(
         meta=meta,
@@ -339,32 +333,32 @@ def _():
 # ── Utility tests ──────────────────────────────────────────────────────────────
 
 @test("safe_filename: sanitises special chars")
-def _():
+def _() -> None:
     from netaudit.utils import safe_filename
     result = safe_filename("192.168.1.1:8080/test")
     assert "/" not in result
     assert ":" not in result
 
 @test("ScanConfig: invalid threads rejected")
-def _():
+def _() -> None:
     from netaudit.scanner import ScanConfig
     try:
         ScanConfig(target="127.0.0.1", ports=[80], threads=0)
-        assert False, "Should raise ValueError"
+        raise AssertionError("Should raise ValueError")
     except ValueError:
         pass
 
 @test("ScanConfig: invalid timeout rejected")
-def _():
+def _() -> None:
     from netaudit.scanner import ScanConfig
     try:
         ScanConfig(target="127.0.0.1", ports=[80], timeout=-1)
-        assert False, "Should raise ValueError"
+        raise AssertionError("Should raise ValueError")
     except ValueError:
         pass
 
 @test("ScanConfig.safe() factory applies safe defaults")
-def _():
+def _() -> None:
     from netaudit.scanner import ScanConfig
     cfg = ScanConfig.safe(target="127.0.0.1", ports=[22, 80])
     assert cfg.threads <= 10

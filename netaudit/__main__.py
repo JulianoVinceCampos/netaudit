@@ -20,7 +20,7 @@ from datetime import datetime
 
 from .constants import DEFAULT_PORTS, VERSION
 from .findings import analyse
-from .models import ScanStatus
+from .models import ScanReport, ScanStatus
 from .output import (
     export_csv,
     export_json,
@@ -28,9 +28,8 @@ from .output import (
     make_progress_callback,
     render_terminal,
 )
-from .scanner import Scanner, ScanConfig
+from .scanner import ScanConfig, Scanner
 from .utils import parse_ports, safe_filename
-
 
 # ── CLI definition ─────────────────────────────────────────────────────────────
 
@@ -39,7 +38,7 @@ def build_parser() -> argparse.ArgumentParser:
         prog="netaudit",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description=textwrap.dedent(f"""\
-            NetAudit v{VERSION} — TCP Port & Service Audit Scanner
+            NetAudit v{VERSION}: TCP Port & Service Audit Scanner
             ════════════════════════════════════════════════════════
             Zero-dependency, audit-grade network port scanner.
             Performs TCP connect scan, banner grabbing, TLS inspection,
@@ -50,13 +49,13 @@ def build_parser() -> argparse.ArgumentParser:
         """),
         epilog=textwrap.dedent("""\
             Examples:
-              # Quick scan of localhost — common ports + banners
+              # Quick scan of localhost: common ports + banners
               python -m netaudit 127.0.0.1 --banners
 
               # Full audit with all outputs
               python -m netaudit 192.168.1.10 -p 1-1024 --banners --out ./reports
 
-              # Safe mode — reduced concurrency, longer timeout
+              # Safe mode: reduced concurrency, longer timeout
               python -m netaudit 10.0.0.1 --safe --banners --out ./reports
 
               # Custom ports + markdown report
@@ -157,7 +156,25 @@ def build_parser() -> argparse.ArgumentParser:
 
 # ── Main ───────────────────────────────────────────────────────────────────────
 
-def main(argv=None) -> int:
+def _force_utf8_output() -> None:
+    """Garante que a saida aceite os glifos do relatorio.
+
+    O console do Windows usa cp1252 por default, que nao cobre os
+    marcadores de teste, a barra de progresso nem a moldura do relatorio.
+    Sem isso, imprimir levanta UnicodeEncodeError e mata o processo.
+    """
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is None:
+            continue
+        try:
+            reconfigure(encoding="utf-8", errors="replace")
+        except (OSError, ValueError):
+            pass
+
+
+def main(argv: list[str] | None = None) -> int:
+    _force_utf8_output()
     parser = build_parser()
     args   = parser.parse_args(argv)
 
@@ -172,7 +189,6 @@ def main(argv=None) -> int:
 
     # Logging
     _configure_logging(args.verbose, args.quiet)
-    log = logging.getLogger("netaudit")
 
     # Safe mode overrides
     threads = args.threads
@@ -263,7 +279,13 @@ def main(argv=None) -> int:
     return 1 if has_critical else 0
 
 
-def _export(report, json_path, csv_path, md_path, quiet):
+def _export(
+    report: ScanReport,
+    json_path: str,
+    csv_path: str,
+    md_path: str,
+    quiet: bool,
+) -> None:
     export_json(report, json_path)
     export_csv(report, csv_path)
     export_markdown(report, md_path)
